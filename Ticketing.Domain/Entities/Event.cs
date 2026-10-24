@@ -1,0 +1,111 @@
+﻿using Ticketing.Domain.Enums;
+using Ticketing.Domain.Exceptions;
+using Ticketing.Domain.Common;
+
+namespace Ticketing.Domain.Entities;
+
+public class Event : AuditableEntity
+{
+    private Event() { }
+
+    public Guid Id { get; private set; }
+    public string Title { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
+    public string Location { get; private set; } = string.Empty;
+    public DateTime StartDate { get; private set; }
+    public DateTime EndDate { get; private set; }
+    public EventStatus Status { get; private set; }
+    public Guid OrganizerId { get; private set; }
+    private readonly List<TicketType> _ticketTypes = new();
+    public IReadOnlyCollection<TicketType> TicketTypes => _ticketTypes;
+
+    public DateTime? OriginalStartDate { get; private set; }
+    public DateTime? OriginalEndDate { get; private set; }
+    public string? PostponementReason { get; private set; }
+
+    public static Event Create(
+        string title,
+        string description,
+        string location,
+        DateTime startDate,
+        DateTime endDate,
+        Guid organizerId)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new DomainException("Le titre est obligatoire.");
+        if (endDate <= startDate)
+            throw new DomainException("La date de fin doit être après la date de début.");
+
+        return new Event
+        {
+            Id = Guid.NewGuid(),
+            Title = title.Trim(),
+            Description = description,
+            Location = location,
+            StartDate = startDate,
+            EndDate = endDate,
+            OrganizerId = organizerId,
+            Status = EventStatus.Draft
+        };
+    }
+
+    public void Publish()
+    {
+        EnsureStatus("publier", EventStatus.Draft);
+        Status = EventStatus.Published;
+    }
+
+    public void Postpone(DateTime newStartDate, DateTime newEndDate, string reason)
+    {
+        EnsureStatus("reporter", EventStatus.Published);
+
+        if (newEndDate <= newStartDate)
+            throw new DomainException("La date de fin doit être après la date de début.");
+        if (string.IsNullOrWhiteSpace(reason))
+            throw new DomainException("Le motif du report est obligatoire.");
+
+        OriginalStartDate = StartDate;
+        OriginalEndDate = EndDate;
+        StartDate = newStartDate;
+        EndDate = newEndDate;
+        PostponementReason = reason.Trim();
+        Status = EventStatus.Postponed;
+    }
+
+    // Reporté -> Publié (la nouvelle date est confirmée)
+    public void Republish()
+    {
+        EnsureStatus("republier", EventStatus.Postponed);
+        Status = EventStatus.Published;
+    }
+
+    public void Cancel()
+    {
+        EnsureStatus("annuler", EventStatus.Published, EventStatus.Postponed);
+        Status = EventStatus.Cancelled;
+    }
+
+    public void Complete()
+    {
+        EnsureStatus("terminer", EventStatus.Published);
+        Status = EventStatus.Completed;
+    }
+
+    public TicketType AddTicketType(string name, decimal price, int totalQuantity)
+    {
+        if (Status is EventStatus.Cancelled or EventStatus.Completed)
+            throw new DomainException(
+                $"Impossible d'ajouter un billet à un événement au statut « {Status} ».");
+
+        var ticketType = TicketType.Create(Id, name, price, totalQuantity);
+        _ticketTypes.Add(ticketType);
+        return ticketType;
+    }
+
+    private void EnsureStatus(string action, params EventStatus[] allowed)
+    {
+        if (!allowed.Contains(Status))
+            throw new DomainException(
+                $"Impossible de {action} un événement au statut « {Status} ».");
+    }
+}
