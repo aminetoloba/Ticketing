@@ -20,7 +20,6 @@
   <ItemGroup>
     <Folder Include="Controllers\" />
     <Folder Include="Authorization\" />
-    <Folder Include="Middleware\" />
   </ItemGroup>
 
   <ItemGroup>
