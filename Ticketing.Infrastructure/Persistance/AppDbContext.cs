@@ -28,6 +28,7 @@ public class AppDbContext
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<StaffAssignment> StaffAssignments => Set<StaffAssignment>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
