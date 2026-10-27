@@ -42,10 +42,7 @@ public class EventService : IEventService
     {
         var @event = await GetEventAsync(id, cancellationToken);
 
-        // Un brouillon n'est visible que de son organisateur et des admins.
-        // On répond « introuvable » plutôt que « interdit » pour ne pas révéler son existence.
-        if (@event.Status == EventStatus.Draft && !CanSeeDraft(@event))
-            throw new NotFoundException("Événement introuvable.");
+        EnsureVisible(@event);
 
         return ToDto(@event);
     }
@@ -100,6 +97,26 @@ public class EventService : IEventService
         return ToDto(@event);
     }
 
+    public async Task<IReadOnlyList<TicketTypeDto>> GetTicketTypesAsync(
+     Guid eventId, CancellationToken cancellationToken = default)
+    {
+        var @event = await GetEventAsync(eventId, cancellationToken);
+        EnsureVisible(@event);
+
+        var ticketTypes = await _events.GetTicketTypesAsync(eventId, cancellationToken);
+        return ticketTypes.Select(ToTicketTypeDto).ToList();
+    }
+
+    public async Task<TicketTypeDto> AddTicketTypeAsync(
+        Guid eventId, SaveTicketTypeRequest request, CancellationToken cancellationToken = default)
+    {
+        var @event = await GetEventAsync(eventId, cancellationToken);
+
+        var ticketType = @event.AddTicketType(request.Name, request.Price, request.TotalQuantity);
+
+        await _events.SaveChangesAsync(cancellationToken);
+        return ToTicketTypeDto(ticketType);
+    }
     private async Task<Event> GetEventAsync(Guid id, CancellationToken cancellationToken) =>
         await _events.GetByIdAsync(id, cancellationToken)
         ?? throw new NotFoundException("Événement introuvable.");
@@ -125,5 +142,22 @@ public class EventService : IEventService
         e.OrganizerId,
         e.OriginalStartDate,
         e.OriginalEndDate,
-        e.PostponementReason);
+        e.PostponementReason
+    );
+
+    private void EnsureVisible(Event @event)
+    {
+        if (@event.Status == EventStatus.Draft && !CanSeeDraft(@event))
+            throw new NotFoundException("Événement introuvable.");
+    }
+
+    private static TicketTypeDto ToTicketTypeDto(TicketType t) => new(
+        t.Id,
+        t.EventId,
+        t.Name,
+        t.Price,
+        t.TotalQuantity,
+        t.SoldQuantity,
+        t.Remaining
+    );
 }

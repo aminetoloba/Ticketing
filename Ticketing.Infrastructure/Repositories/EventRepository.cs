@@ -21,7 +21,9 @@ public class EventRepository : IEventRepository
     }
 
     public Task<Event?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
-        _db.Events.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+        _db.Events
+            .Include(e => e.TicketTypes)
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
     public async Task<Guid?> GetOrganizerIdAsync(
         Guid eventId, CancellationToken cancellationToken = default)
@@ -65,6 +67,15 @@ public class EventRepository : IEventRepository
 
         return await PageAsync(ordered, query, cancellationToken);
     }
+
+    public async Task<IReadOnlyList<TicketType>> GetTicketTypesAsync(
+        Guid eventId, CancellationToken cancellationToken = default) =>
+        await _db.TicketTypes
+            .AsNoTracking()
+            .Where(t => t.EventId == eventId)
+            .OrderBy(t => t.Price)
+            .ThenBy(t => t.Name)
+            .ToListAsync(cancellationToken);
 
     public async Task AddAsync(Event @event, CancellationToken cancellationToken = default) =>
         await _db.Events.AddAsync(@event, cancellationToken);

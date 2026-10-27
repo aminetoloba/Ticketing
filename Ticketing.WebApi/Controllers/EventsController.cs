@@ -14,15 +14,18 @@ public class EventsController : ControllerBase
     private readonly IEventService _events;
     private readonly IValidator<SaveEventRequest> _saveValidator;
     private readonly IValidator<EventQuery> _queryValidator;
+    private readonly IValidator<SaveTicketTypeRequest> _ticketTypeValidator;
 
     public EventsController(
         IEventService events,
         IValidator<SaveEventRequest> saveValidator,
-        IValidator<EventQuery> queryValidator)
+        IValidator<EventQuery> queryValidator,
+        IValidator<SaveTicketTypeRequest> ticketTypeValidator)
     {
         _events = events;
         _saveValidator = saveValidator;
         _queryValidator = queryValidator;
+        _ticketTypeValidator = ticketTypeValidator;
     }
 
     // Catalogue public : pas besoin d'être connecté
@@ -77,4 +80,20 @@ public class EventsController : ControllerBase
     [Authorize(Policy = Policies.IsEventOwner)]
     public async Task<ActionResult<EventDto>> Publish(Guid id, CancellationToken cancellationToken) =>
         Ok(await _events.PublishAsync(id, cancellationToken));
+
+    [HttpGet("{id:guid}/ticket-types")]
+    [AllowAnonymous]
+    public async Task<ActionResult<IReadOnlyList<TicketTypeDto>>> GetTicketTypes(
+    Guid id, CancellationToken cancellationToken) =>
+    Ok(await _events.GetTicketTypesAsync(id, cancellationToken));
+
+    [HttpPost("{id:guid}/ticket-types")]
+    [Authorize(Policy = Policies.IsEventOwner)]
+    public async Task<ActionResult<TicketTypeDto>> AddTicketType(
+        Guid id, SaveTicketTypeRequest request, CancellationToken cancellationToken)
+    {
+        await _ticketTypeValidator.ValidateAndThrowAsync(request, cancellationToken);
+        var created = await _events.AddTicketTypeAsync(id, request, cancellationToken);
+        return CreatedAtAction(nameof(GetTicketTypes), new { id }, created);
+    }
 }
