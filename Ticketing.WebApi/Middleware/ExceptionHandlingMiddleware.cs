@@ -53,6 +53,11 @@ public class ExceptionHandlingMiddleware
                 title = auth.Message;
                 break;
 
+            case NotFoundException notFound:
+                status = StatusCodes.Status404NotFound;
+                title = notFound.Message;
+                break;
+
             case DomainException domain:
                 status = StatusCodes.Status400BadRequest;
                 title = domain.Message;

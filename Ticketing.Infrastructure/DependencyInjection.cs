@@ -10,6 +10,7 @@ using Ticketing.Infrastructure.Persistance.Interceptors;
 using Ticketing.Application.Common.Interfaces;
 using Ticketing.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
+using Ticketing.Infrastructure.Persistance.Repositories;
 
 namespace Ticketing.Infrastructure;
 
@@ -21,6 +22,8 @@ public static class DependencyInjection
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IEventRepository, EventRepository>();
         services.AddIdentityCore<ApplicationUser>(options =>
             {
                 options.User.RequireUniqueEmail = true;

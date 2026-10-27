@@ -49,9 +49,40 @@ public class Event : AuditableEntity
         };
     }
 
-    public void Publish()
+    public void Update(
+        string title,
+        string description,
+        string location,
+        DateTime startDate,
+        DateTime endDate)
+    {
+        EnsureStatus("modifier", EventStatus.Draft, EventStatus.Published);
+
+        if (string.IsNullOrWhiteSpace(title))
+            throw new DomainException("Le titre est obligatoire.");
+        if (endDate <= startDate)
+            throw new DomainException("La date de fin doit être après la date de début.");
+
+        // Des billets peuvent déjà être vendus : les dates passent par le report
+        if (Status == EventStatus.Published && (startDate != StartDate || endDate != EndDate))
+            throw new DomainException(
+                "Les dates d'un événement publié ne peuvent changer que par un report.");
+
+        Title = title.Trim();
+        Description = description;
+        Location = location;
+        StartDate = startDate;
+        EndDate = endDate;
+    }
+
+    public void Publish(DateTime utcNow)
     {
         EnsureStatus("publier", EventStatus.Draft);
+
+        if (StartDate <= utcNow)
+            throw new DomainException(
+                "Impossible de publier un événement dont la date de début est passée.");
+
         Status = EventStatus.Published;
     }
 
@@ -72,7 +103,6 @@ public class Event : AuditableEntity
         Status = EventStatus.Postponed;
     }
 
-    // Reporté -> Publié (la nouvelle date est confirmée)
     public void Republish()
     {
         EnsureStatus("republier", EventStatus.Postponed);
