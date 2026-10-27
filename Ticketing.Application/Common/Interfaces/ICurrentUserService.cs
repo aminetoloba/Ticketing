@@ -9,4 +9,6 @@ namespace Ticketing.Application.Common.Interfaces;
 public interface ICurrentUserService
 {
     string? UserIdentifier { get; }
+    Guid? UserId { get; }
+    string? Role { get; }
 }

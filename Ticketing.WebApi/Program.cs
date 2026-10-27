@@ -8,6 +8,8 @@ using Ticketing.Infrastructure;
 using Ticketing.Infrastructure.Identity;
 using Ticketing.WebApi.Middleware;
 using Ticketing.WebApi.Services;
+using Microsoft.AspNetCore.Authorization;
+using Ticketing.WebApi.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,9 +80,13 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(Policies.IsEventOwner, policy =>
+        policy.AddRequirements(new EventOwnerRequirement()));
+});
 
-// Pipeline
+builder.Services.AddScoped<IAuthorizationHandler, EventOwnerHandler>();
 
 var app = builder.Build();
 
