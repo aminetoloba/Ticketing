@@ -79,6 +79,10 @@ public class Event : AuditableEntity
     {
         EnsureStatus("publier", EventStatus.Draft);
 
+        if (_ticketTypes.Count == 0)
+            throw new DomainException(
+                "Ajoutez au moins un type de billet avant de publier l'événement.");
+
         if (StartDate <= utcNow)
             throw new DomainException(
                 "Impossible de publier un événement dont la date de début est passée.");

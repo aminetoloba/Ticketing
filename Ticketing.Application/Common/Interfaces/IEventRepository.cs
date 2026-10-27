@@ -12,6 +12,8 @@ public interface IEventRepository
 {
     Task<Event?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Guid?> GetOrganizerIdAsync(Guid eventId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<TicketType>> GetTicketTypesAsync(
+    Guid eventId, CancellationToken cancellationToken = default);
     Task<(IReadOnlyList<Event> Items, int TotalCount)> SearchPublicAsync(
         EventQuery query, CancellationToken cancellationToken = default);
 
