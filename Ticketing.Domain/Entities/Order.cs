@@ -20,6 +20,10 @@ public class Order : AuditableEntity
     public DateTime ExpiresAt { get; private set; }
     public decimal TotalAmount { get; private set; }
 
+    // Concurrence optimiste : empêche qu'un paiement et une expiration
+    // modifient la même commande en même temps
+    public uint RowVersion { get; private set; }
+
     private readonly List<OrderItem> _items = new();
     public IReadOnlyCollection<OrderItem> Items => _items;
 
