@@ -11,6 +11,9 @@ using Ticketing.Application.Common.Interfaces;
 using Ticketing.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Ticketing.Infrastructure.Persistance.Repositories;
+using Ticketing.Infrastructure.BackgroundJobs;
+using Ticketing.Infrastructure.Payments;
+using Ticketing.Infrastructure.Tickets;
 
 namespace Ticketing.Infrastructure;
 
@@ -24,6 +27,11 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IPaymentGateway, FakePaymentGateway>();
+        services.AddScoped<ITicketRepository, TicketRepository>();
+        services.AddSingleton<IQrCodeGenerator, QrCodeGenerator>();
+        services.AddHostedService<OrderExpirationWorker>();
         services.AddIdentityCore<ApplicationUser>(options =>
             {
                 options.User.RequireUniqueEmail = true;

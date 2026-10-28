@@ -20,6 +20,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         builder.Property(o => o.Status).HasConversion<string>().HasMaxLength(30);
         builder.Property(o => o.TotalAmount).HasPrecision(18, 2);
+        builder.Property(o => o.RowVersion).IsRowVersion();
 
         // On ne supprime ni un utilisateur ni un événement qui a des commandes
         builder.HasOne<ApplicationUser>()

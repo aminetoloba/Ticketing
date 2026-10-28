@@ -49,7 +49,7 @@ public class TicketType : AuditableEntity
         if (quantity <= 0)
             throw new DomainException("La quantité doit être supérieure à zéro.");
         if (quantity > Remaining)
-            throw new DomainException("Plus assez de places disponibles.");
+            throw new InsufficientStockException("Plus assez de places disponibles.");
 
         SoldQuantity += quantity;
     }

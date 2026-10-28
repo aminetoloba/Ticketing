@@ -58,6 +58,21 @@ public class ExceptionHandlingMiddleware
                 title = notFound.Message;
                 break;
 
+            case InsufficientStockException stock:
+                status = StatusCodes.Status409Conflict;
+                title = stock.Message;
+                break;
+
+            case ConcurrencyConflictException:
+                status = StatusCodes.Status409Conflict;
+                title = "Trop de demandes simultanées sur ces billets. Réessayez.";
+                break;
+
+            case PaymentFailedException paymentFailed:
+                status = StatusCodes.Status402PaymentRequired;
+                title = paymentFailed.Message;
+                break;
+
             case DomainException domain:
                 status = StatusCodes.Status400BadRequest;
                 title = domain.Message;

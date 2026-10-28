@@ -18,6 +18,10 @@ public static class DependencyInjection
         // Enregistre tous les validateurs de l'assembly d'un coup
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
         services.AddScoped<IEventService, EventService>();
+        services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IOrderExpirationService, OrderExpirationService>();
+        services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<ITicketService, TicketService>();
         return services;
     }
 }
