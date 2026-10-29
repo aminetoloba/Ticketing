@@ -191,6 +191,9 @@ namespace Ticketing.Infrastructure.Persistance.Migrations
                     b.Property<DateTime?>("OriginalStartDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("PostponedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("PostponementReason")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");

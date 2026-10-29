@@ -15,17 +15,20 @@ public class EventsController : ControllerBase
     private readonly IValidator<SaveEventRequest> _saveValidator;
     private readonly IValidator<EventQuery> _queryValidator;
     private readonly IValidator<SaveTicketTypeRequest> _ticketTypeValidator;
+    private readonly IValidator<PostponeEventRequest> _postponeValidator;
 
     public EventsController(
         IEventService events,
         IValidator<SaveEventRequest> saveValidator,
         IValidator<EventQuery> queryValidator,
-        IValidator<SaveTicketTypeRequest> ticketTypeValidator)
+        IValidator<SaveTicketTypeRequest> ticketTypeValidator,
+        IValidator<PostponeEventRequest> postponeValidator)
     {
         _events = events;
         _saveValidator = saveValidator;
         _queryValidator = queryValidator;
         _ticketTypeValidator = ticketTypeValidator;
+        _postponeValidator = postponeValidator;
     }
 
     // Catalogue public : pas besoin d'être connecté
@@ -80,6 +83,15 @@ public class EventsController : ControllerBase
     [Authorize(Policy = Policies.IsEventOwner)]
     public async Task<ActionResult<EventDto>> Publish(Guid id, CancellationToken cancellationToken) =>
         Ok(await _events.PublishAsync(id, cancellationToken));
+
+    [HttpPost("{id:guid}/postpone")]
+    [Authorize(Policy = Policies.IsEventOwner)]
+    public async Task<ActionResult<EventDto>> Postpone(
+    Guid id, PostponeEventRequest request, CancellationToken cancellationToken)
+    {
+        await _postponeValidator.ValidateAndThrowAsync(request, cancellationToken);
+        return Ok(await _events.PostponeAsync(id, request, cancellationToken));
+    }
 
     [HttpGet("{id:guid}/ticket-types")]
     [AllowAnonymous]

@@ -37,3 +37,15 @@ public class EventQueryValidator : AbstractValidator<EventQuery>
             .WithMessage("La date de fin du filtre doit être après la date de début.");
     }
 }
+
+public class PostponeEventRequestValidator : AbstractValidator<PostponeEventRequest>
+{
+    public PostponeEventRequestValidator()
+    {
+        RuleFor(x => x.Reason).NotEmpty().MaximumLength(1000);
+
+        RuleFor(x => x.NewEndDate)
+            .GreaterThan(x => x.NewStartDate)
+            .WithMessage("La date de fin doit être après la date de début.");
+    }
+}

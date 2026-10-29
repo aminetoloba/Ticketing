@@ -61,6 +61,33 @@ public class OrderRepository : IOrderRepository
         Guid paymentId, CancellationToken cancellationToken = default) =>
         _db.Payments.FirstOrDefaultAsync(p => p.Id == paymentId, cancellationToken);
 
+    public async Task<IReadOnlyList<Order>> GetPendingByEventAsync(
+    Guid eventId, CancellationToken cancellationToken = default) =>
+    await _db.Orders
+        .Where(o => o.EventId == eventId && o.Status == OrderStatus.Pending)
+        .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<Guid>> GetPaidOrderIdsByEventAsync(
+        Guid eventId, CancellationToken cancellationToken = default) =>
+        await _db.Orders
+            .Where(o => o.EventId == eventId && o.Status == OrderStatus.Paid)
+            .OrderBy(o => o.CreatedAt)
+            .Select(o => o.Id)
+            .ToListAsync(cancellationToken);
+
+    // Avec ses billets : Order.Cancel() les annule aussi
+    public Task<Order?> GetForRefundAsync(Guid orderId, CancellationToken cancellationToken = default) =>
+        _db.Orders
+            .Include(o => o.Tickets)
+            .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
+
+    public Task<Payment?> GetSucceededPaymentAsync(
+        Guid orderId, CancellationToken cancellationToken = default) =>
+        _db.Payments
+            .Where(p => p.OrderId == orderId && p.Status == PaymentStatus.Succeeded)
+            .OrderByDescending(p => p.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         try

@@ -15,6 +15,7 @@ public interface IEventService
     Task<EventDto> CreateAsync(SaveEventRequest request, CancellationToken cancellationToken = default);
     Task<EventDto> UpdateAsync(Guid id, SaveEventRequest request, CancellationToken cancellationToken = default);
     Task<EventDto> PublishAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<EventDto> PostponeAsync(Guid id, PostponeEventRequest request, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<TicketTypeDto>> GetTicketTypesAsync(Guid eventId, CancellationToken cancellationToken = default);
     Task<TicketTypeDto> AddTicketTypeAsync(Guid eventId, SaveTicketTypeRequest request, CancellationToken cancellationToken = default);
 }

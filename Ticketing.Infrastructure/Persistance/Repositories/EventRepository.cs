@@ -35,6 +35,13 @@ public class EventRepository : IEventRepository
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<EventStatus?> GetStatusAsync(
+    Guid eventId, CancellationToken cancellationToken = default) =>
+    await _db.Events
+        .Where(e => e.Id == eventId)
+        .Select(e => (EventStatus?)e.Status)
+        .FirstOrDefaultAsync(cancellationToken);
+
     public async Task<(IReadOnlyList<Event> Items, int TotalCount)> SearchPublicAsync(
         EventQuery query, CancellationToken cancellationToken = default)
     {

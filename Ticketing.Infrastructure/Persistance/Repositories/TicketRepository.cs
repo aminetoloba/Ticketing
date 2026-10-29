@@ -8,6 +8,7 @@ using Ticketing.Application.Common;
 using Ticketing.Application.Common.Interfaces;
 using Ticketing.Application.DTOs.Tickets;
 using Ticketing.Domain.Entities;
+using Ticketing.Domain.Enums;
 
 namespace Ticketing.Infrastructure.Persistance.Repositories;
 
@@ -68,6 +69,10 @@ public class TicketRepository : ITicketRepository
          select t)
         .AsNoTracking()
         .FirstOrDefaultAsync(cancellationToken);
+
+    public Task<bool> AnyUsedForEventAsync(Guid eventId, CancellationToken cancellationToken = default) =>
+    _db.Tickets.AnyAsync(
+        t => t.EventId == eventId && t.Status == TicketStatus.Used, cancellationToken);
 
     public Task<Ticket?> GetByCodeAsync(string code, CancellationToken cancellationToken = default) =>
     _db.Tickets.FirstOrDefaultAsync(t => t.Code == code, cancellationToken);

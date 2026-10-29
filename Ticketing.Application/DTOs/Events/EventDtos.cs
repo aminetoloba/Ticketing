@@ -24,7 +24,14 @@ public record EventDto(
     Guid OrganizerId,
     DateTime? OriginalStartDate,
     DateTime? OriginalEndDate,
-    string? PostponementReason);
+    string? PostponementReason,
+    DateTime? PostponedAt,
+    DateTime? RefundWindowEndsAt);
+
+public record PostponeEventRequest(
+    DateTimeOffset NewStartDate,
+    DateTimeOffset NewEndDate,
+    string Reason);
 
 // Filtres de la liste, lus dans l'URL : /events?search=jazz&page=2
 public record EventQuery(
@@ -43,3 +50,10 @@ public record PagedResult<T>(
 {
     public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
 }
+
+public record CancelEventResultDto(
+    EventDto Event,
+    int CancelledPendingOrders,
+    int RefundedOrders,
+    // Commandes à retraiter : rappeler l'annulation, ou intervenir à la main
+    IReadOnlyList<Guid> FailedOrderIds);
