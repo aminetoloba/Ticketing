@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddSingleton<IQrCodeGenerator, QrCodeGenerator>();
         services.AddHostedService<OrderExpirationWorker>();
+        services.AddScoped<IStaffRepository, StaffRepository>();
         services.AddIdentityCore<ApplicationUser>(options =>
             {
                 options.User.RequireUniqueEmail = true;

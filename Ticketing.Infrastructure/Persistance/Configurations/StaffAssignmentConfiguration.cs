@@ -30,6 +30,8 @@ public class StaffAssignmentConfiguration : IEntityTypeConfiguration<StaffAssign
             .OnDelete(DeleteBehavior.Cascade);
 
         // Un membre du staff ne peut être affecté qu'une fois au même événement
-        builder.HasIndex(s => new { s.StaffId, s.EventId }).IsUnique();
+        builder.HasIndex(s => new { s.StaffId, s.EventId })
+            .IsUnique()
+            .HasFilter("\"DeletedAt\" IS NULL");
     }
 }

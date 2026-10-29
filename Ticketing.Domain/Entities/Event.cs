@@ -8,6 +8,8 @@ public class Event : AuditableEntity
 {
     private Event() { }
 
+    public static readonly TimeSpan CheckInOpensBefore = TimeSpan.FromHours(3);
+    public static readonly TimeSpan CheckInClosesAfter = TimeSpan.FromHours(3);
     public Guid Id { get; private set; }
     public string Title { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
@@ -134,6 +136,19 @@ public class Event : AuditableEntity
         var ticketType = TicketType.Create(Id, name, price, totalQuantity);
         _ticketTypes.Add(ticketType);
         return ticketType;
+    }
+
+    public void EnsureCheckInOpen(DateTime utcNow)
+    {
+        if (Status is not (EventStatus.Published or EventStatus.Postponed))
+            throw new DomainException(
+                $"Le contrôle des billets est fermé pour un événement au statut « {Status} ».");
+
+        if (utcNow < StartDate - CheckInOpensBefore)
+            throw new DomainException("Le contrôle n'est pas encore ouvert pour cet événement.");
+
+        if (utcNow > EndDate + CheckInClosesAfter)
+            throw new DomainException("Le contrôle est terminé pour cet événement.");
     }
 
     private void EnsureStatus(string action, params EventStatus[] allowed)

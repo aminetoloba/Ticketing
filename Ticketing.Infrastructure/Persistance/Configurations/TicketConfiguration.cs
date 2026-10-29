@@ -19,6 +19,7 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
 
         builder.Property(t => t.Code).IsRequired().HasMaxLength(64);
         builder.Property(t => t.Status).HasConversion<string>().HasMaxLength(30);
+        builder.Property(t => t.RowVersion).IsRowVersion();
 
         builder.HasOne<Event>()
             .WithMany()

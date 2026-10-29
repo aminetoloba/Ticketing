@@ -73,6 +73,11 @@ public class ExceptionHandlingMiddleware
                 title = paymentFailed.Message;
                 break;
 
+            case TicketAlreadyUsedException alreadyUsed:
+                status = StatusCodes.Status409Conflict;
+                title = alreadyUsed.Message;
+                break;
+
             case DomainException domain:
                 status = StatusCodes.Status400BadRequest;
                 title = domain.Message;
