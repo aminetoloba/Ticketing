@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Ticketing.Application.Common;
 using Ticketing.Application.Common.Interfaces;
 using Ticketing.Application.DTOs.Tickets;
 using Ticketing.Domain.Entities;
@@ -67,4 +68,21 @@ public class TicketRepository : ITicketRepository
          select t)
         .AsNoTracking()
         .FirstOrDefaultAsync(cancellationToken);
+
+    public Task<Ticket?> GetByCodeAsync(string code, CancellationToken cancellationToken = default) =>
+    _db.Tickets.FirstOrDefaultAsync(t => t.Code == code, cancellationToken);
+
+    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            _db.ChangeTracker.Clear();
+            throw new ConcurrencyConflictException(
+                "Le billet a été modifié par une autre opération.");
+        }
+    }
 }

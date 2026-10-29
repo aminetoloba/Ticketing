@@ -456,7 +456,8 @@ namespace Ticketing.Infrastructure.Persistance.Migrations
                     b.HasIndex("EventId");
 
                     b.HasIndex("StaffId", "EventId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"DeletedAt\" IS NULL");
 
                     b.ToTable("StaffAssignments", (string)null);
                 });
@@ -489,6 +490,12 @@ namespace Ticketing.Infrastructure.Persistance.Migrations
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
 
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -502,6 +509,9 @@ namespace Ticketing.Infrastructure.Persistance.Migrations
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 

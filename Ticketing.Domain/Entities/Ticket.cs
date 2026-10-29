@@ -23,6 +23,11 @@ public class Ticket : AuditableEntity
     public string Code { get; private set; } = string.Empty;
     public TicketStatus Status { get; private set; }
 
+    // Quand le billet a été scanné à l'entrée
+    public DateTime? UsedAt { get; private set; }
+
+    // Concurrence optimiste : deux scans simultanés ne peuvent pas réussir tous les deux
+    public uint RowVersion { get; private set; }
     public static Ticket Create(Guid orderId, Guid eventId, Guid ticketTypeId)
     {
         return new Ticket
@@ -36,7 +41,7 @@ public class Ticket : AuditableEntity
         };
     }
 
-    public void MarkAsUsed()
+    public void MarkAsUsed(DateTime utcNow)
     {
         if (Status == TicketStatus.Used)
             throw new DomainException("Ce billet a déjà été utilisé.");
@@ -44,12 +49,13 @@ public class Ticket : AuditableEntity
             throw new DomainException("Ce billet est annulé.");
 
         Status = TicketStatus.Used;
+        UsedAt = utcNow;
     }
 
     public void Cancel()
     {
         if (Status == TicketStatus.Used)
-            throw new DomainException("Impossible d'annuler un billet déjà utilisé.");
+            throw new TicketAlreadyUsedException("Ce billet a déjà été utilisé.");
 
         Status = TicketStatus.Cancelled;
     }

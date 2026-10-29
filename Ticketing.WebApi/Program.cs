@@ -84,9 +84,12 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(Policies.IsEventOwner, policy =>
         policy.AddRequirements(new EventOwnerRequirement()));
+    options.AddPolicy(Policies.IsAssignedStaff, policy =>
+        policy.AddRequirements(new AssignedStaffRequirement()));
 });
 
 builder.Services.AddScoped<IAuthorizationHandler, EventOwnerHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, AssignedStaffHandler>();
 
 var app = builder.Build();
 
