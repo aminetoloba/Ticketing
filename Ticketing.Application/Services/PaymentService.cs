@@ -15,13 +15,18 @@ namespace Ticketing.Application.Services;
 public class PaymentService : IPaymentService
 {
     private readonly IOrderRepository _orders;
+    private readonly IEventRepository _events;
     private readonly IPaymentGateway _gateway;
     private readonly ICurrentUserService _currentUser;
 
     public PaymentService(
-        IOrderRepository orders, IPaymentGateway gateway, ICurrentUserService currentUser)
+        IOrderRepository orders,
+        IEventRepository events,
+        IPaymentGateway gateway,
+        ICurrentUserService currentUser)
     {
         _orders = orders;
+        _events = events;
         _gateway = gateway;
         _currentUser = currentUser;
     }
@@ -48,6 +53,11 @@ public class PaymentService : IPaymentService
 
         if (order.IsExpired(DateTime.UtcNow))
             throw new DomainException("La réservation a expiré. Recommencez votre commande.");
+
+        // L'événement a pu être annulé depuis la création de la commande
+        var eventStatus = await _events.GetStatusAsync(order.EventId, cancellationToken);
+        if (eventStatus is not (EventStatus.Published or EventStatus.Postponed))
+            throw new DomainException("Cet événement n'est plus ouvert à la vente.");
 
         // On trace la tentative avant d'appeler le fournisseur
         var payment = Payment.Create(order.Id, order.TotalAmount);

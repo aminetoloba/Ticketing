@@ -97,6 +97,21 @@ public class EventService : IEventService
         return ToDto(@event);
     }
 
+    public async Task<EventDto> PostponeAsync(
+    Guid id, PostponeEventRequest request, CancellationToken cancellationToken = default)
+    {
+        var @event = await GetEventAsync(id, cancellationToken);
+
+        @event.Postpone(
+            request.NewStartDate.UtcDateTime,
+            request.NewEndDate.UtcDateTime,
+            request.Reason,
+            DateTime.UtcNow);
+
+        await _events.SaveChangesAsync(cancellationToken);
+        return ToDto(@event);
+    }
+
     public async Task<IReadOnlyList<TicketTypeDto>> GetTicketTypesAsync(
      Guid eventId, CancellationToken cancellationToken = default)
     {
@@ -131,7 +146,7 @@ public class EventService : IEventService
         IReadOnlyList<Event> items, int total, EventQuery query) =>
         new(items.Select(ToDto).ToList(), query.Page, query.PageSize, total);
 
-    private static EventDto ToDto(Event e) => new(
+    internal static EventDto ToDto(Event e) => new(
         e.Id,
         e.Title,
         e.Description,
@@ -142,7 +157,9 @@ public class EventService : IEventService
         e.OrganizerId,
         e.OriginalStartDate,
         e.OriginalEndDate,
-        e.PostponementReason
+        e.PostponementReason,
+        e.PostponedAt,
+        e.RefundWindowEndsAt
     );
 
     private void EnsureVisible(Event @event)

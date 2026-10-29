@@ -15,6 +15,10 @@ public interface IOrderRepository
     Task<Order?> GetByIdForPaymentAsync(Guid orderId, CancellationToken cancellationToken = default);
     Task AddPaymentAsync(Payment payment, CancellationToken cancellationToken = default);
     Task<Payment?> GetPaymentAsync(Guid paymentId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Order>> GetPendingByEventAsync(Guid eventId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Guid>> GetPaidOrderIdsByEventAsync(Guid eventId, CancellationToken cancellationToken = default);
+    Task<Order?> GetForRefundAsync(Guid orderId, CancellationToken cancellationToken = default);
+    Task<Payment?> GetSucceededPaymentAsync(Guid orderId, CancellationToken cancellationToken = default);
     // Commandes en attente dont le délai est dépassé (suivies, avec leurs lignes)
     Task<IReadOnlyList<Order>> GetExpiredPendingAsync(
         DateTime utcNow, int take, CancellationToken cancellationToken = default);

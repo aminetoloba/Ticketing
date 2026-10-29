@@ -74,7 +74,7 @@ public class OrderService : IOrderService
         if (@event.Status == EventStatus.Draft)
             throw new NotFoundException("Événement introuvable.");
 
-        if (@event.Status != EventStatus.Published || @event.EndDate <= now)
+        if (@event.Status is not (EventStatus.Published or EventStatus.Postponed) || @event.EndDate <= now)
             throw new DomainException("Cet événement n'est pas ouvert à la vente.");
 
         var lines = new List<(TicketType TicketType, int Quantity)>();

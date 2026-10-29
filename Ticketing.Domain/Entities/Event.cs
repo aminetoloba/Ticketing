@@ -24,6 +24,12 @@ public class Event : AuditableEntity
     public DateTime? OriginalStartDate { get; private set; }
     public DateTime? OriginalEndDate { get; private set; }
     public string? PostponementReason { get; private set; }
+    public DateTime? PostponedAt { get; private set; }
+
+    // Après un report, les participants peuvent demander un remboursement pendant cette durée
+    public static readonly TimeSpan RefundWindow = TimeSpan.FromDays(14);
+
+    public DateTime? RefundWindowEndsAt => PostponedAt + RefundWindow;
 
     public static Event Create(
         string title,
@@ -92,7 +98,7 @@ public class Event : AuditableEntity
         Status = EventStatus.Published;
     }
 
-    public void Postpone(DateTime newStartDate, DateTime newEndDate, string reason)
+    public void Postpone(DateTime newStartDate, DateTime newEndDate, string reason, DateTime utcNow)
     {
         EnsureStatus("reporter", EventStatus.Published);
 
@@ -100,12 +106,17 @@ public class Event : AuditableEntity
             throw new DomainException("La date de fin doit être après la date de début.");
         if (string.IsNullOrWhiteSpace(reason))
             throw new DomainException("Le motif du report est obligatoire.");
+        if (newStartDate <= utcNow)
+            throw new DomainException("La nouvelle date de début doit être dans le futur.");
+        if (newStartDate == StartDate && newEndDate == EndDate)
+            throw new DomainException("Les nouvelles dates sont identiques aux dates actuelles.");
 
         OriginalStartDate = StartDate;
         OriginalEndDate = EndDate;
         StartDate = newStartDate;
         EndDate = newEndDate;
         PostponementReason = reason.Trim();
+        PostponedAt = utcNow;
         Status = EventStatus.Postponed;
     }
 

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Ticketing.Application.DTOs.Events;
 using Ticketing.Domain.Entities;
+using Ticketing.Domain.Enums;
 
 namespace Ticketing.Application.Common.Interfaces;
 
@@ -12,6 +13,7 @@ public interface IEventRepository
 {
     Task<Event?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Guid?> GetOrganizerIdAsync(Guid eventId, CancellationToken cancellationToken = default);
+    Task<EventStatus?> GetStatusAsync(Guid eventId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<TicketType>> GetTicketTypesAsync(
     Guid eventId, CancellationToken cancellationToken = default);
     Task<(IReadOnlyList<Event> Items, int TotalCount)> SearchPublicAsync(
