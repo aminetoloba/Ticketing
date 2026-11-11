@@ -14,17 +14,20 @@ public class OrdersController : ControllerBase
 {
     private readonly IOrderService _orders;
     private readonly IPaymentService _payments;
+    private readonly IRefundService _refunds;
     private readonly IValidator<CreateOrderRequest> _createValidator;
     private readonly IValidator<PayOrderRequest> _payValidator;
 
     public OrdersController(
         IOrderService orders,
         IPaymentService payments,
+        IRefundService refunds,
         IValidator<CreateOrderRequest> createValidator,
         IValidator<PayOrderRequest> payValidator)
     {
         _orders = orders;
         _payments = payments;
+        _refunds = refunds;
         _createValidator = createValidator;
         _payValidator = payValidator;
     }
@@ -47,6 +50,12 @@ public class OrdersController : ControllerBase
         await _payValidator.ValidateAndThrowAsync(request, cancellationToken);
         return Ok(await _payments.PayOrderAsync(id, request, cancellationToken));
     }
+
+    [HttpPost("{id:guid}/refund-request")]
+    [Authorize(Roles = Policies.Buyers)]
+    public async Task<ActionResult<OrderDto>> RequestRefund(
+    Guid id, CancellationToken cancellationToken) =>
+    Ok(await _refunds.RequestRefundAsync(id, cancellationToken));
 
     [HttpGet("mine")]
     public async Task<ActionResult<IReadOnlyList<OrderDto>>> GetMine(

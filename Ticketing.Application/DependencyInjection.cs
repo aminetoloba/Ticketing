@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IStaffService, StaffService>();
         services.AddScoped<ICheckInService, CheckInService>();
         services.AddScoped<IEventCancellationService, EventCancellationService>();
+        services.AddScoped<IRefundService, RefundService>();
         return services;
     }
 }

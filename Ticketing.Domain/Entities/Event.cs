@@ -162,6 +162,17 @@ public class Event : AuditableEntity
             throw new DomainException("Le contrôle est terminé pour cet événement.");
     }
 
+    // Le remboursement à la demande n'existe que pendant la fenêtre qui suit un report
+    public void EnsureRefundWindowOpen(DateTime utcNow)
+    {
+        if (Status != EventStatus.Postponed || PostponedAt is null)
+            throw new DomainException(
+                "Le remboursement à la demande n'est possible que pour un événement reporté.");
+
+        if (utcNow > RefundWindowEndsAt)
+            throw new DomainException("La fenêtre de remboursement est terminée.");
+    }
+
     private void EnsureStatus(string action, params EventStatus[] allowed)
     {
         if (!allowed.Contains(Status))
