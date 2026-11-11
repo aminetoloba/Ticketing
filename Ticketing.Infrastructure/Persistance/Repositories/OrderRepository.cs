@@ -75,9 +75,10 @@ public class OrderRepository : IOrderRepository
             .Select(o => o.Id)
             .ToListAsync(cancellationToken);
 
-    // Avec ses billets : Order.Cancel() les annule aussi
+    // Avec ses lignes (pour rendre le stock) et ses billets (Order.Cancel() les annule aussi)
     public Task<Order?> GetForRefundAsync(Guid orderId, CancellationToken cancellationToken = default) =>
         _db.Orders
+            .Include(o => o.Items)
             .Include(o => o.Tickets)
             .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
 
