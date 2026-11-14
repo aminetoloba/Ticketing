@@ -11,6 +11,7 @@ public interface IOrderRepository
 {
     Task AddAsync(Order order, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Order>> GetByUserAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<Order?> GetByIdForUserAsync(Guid orderId, Guid userId, CancellationToken cancellationToken = default);
     // Commande suivie par EF, avec ses lignes
     Task<Order?> GetByIdForPaymentAsync(Guid orderId, CancellationToken cancellationToken = default);
     Task AddPaymentAsync(Payment payment, CancellationToken cancellationToken = default);

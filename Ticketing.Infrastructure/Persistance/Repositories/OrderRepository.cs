@@ -24,6 +24,13 @@ public class OrderRepository : IOrderRepository
     public async Task AddAsync(Order order, CancellationToken cancellationToken = default) =>
         await _db.Orders.AddAsync(order, cancellationToken);
 
+    public Task<Order?> GetByIdForUserAsync(
+    Guid orderId, Guid userId, CancellationToken cancellationToken = default) =>
+    _db.Orders
+        .AsNoTracking()
+        .Include(o => o.Items)
+        .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId, cancellationToken);
+
     public async Task<IReadOnlyList<Order>> GetByUserAsync(
         Guid userId, CancellationToken cancellationToken = default) =>
         await _db.Orders

@@ -11,4 +11,5 @@ public interface IOrderService
 {
     Task<OrderDto> CreateAsync(CreateOrderRequest request, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<OrderDto>> GetMineAsync(CancellationToken cancellationToken = default);
+    Task<OrderDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 }
