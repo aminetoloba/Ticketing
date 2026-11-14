@@ -61,4 +61,8 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<OrderDto>>> GetMine(
         CancellationToken cancellationToken) =>
         Ok(await _orders.GetMineAsync(cancellationToken));
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<OrderDto>> GetById(Guid id, CancellationToken cancellationToken) =>
+    Ok(await _orders.GetByIdAsync(id, cancellationToken));
 }

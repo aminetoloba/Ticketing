@@ -62,6 +62,18 @@ public class OrderService : IOrderService
         return orders.Select(ToDto).ToList();
     }
 
+    public async Task<OrderDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var userId = _currentUser.UserId
+            ?? throw new AuthException("Utilisateur non authentifié.");
+
+        // La commande d'un autre : « introuvable » plutôt que « interdit »
+        var order = await _orders.GetByIdForUserAsync(id, userId, cancellationToken)
+            ?? throw new NotFoundException("Commande introuvable.");
+
+        return ToDto(order);
+    }
+
     private async Task<OrderDto> TryCreateAsync(
         Guid userId, CreateOrderRequest request, CancellationToken cancellationToken)
     {
