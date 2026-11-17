@@ -8,6 +8,7 @@ using Ticketing.Application.Common;
 using Ticketing.Application.Common.Interfaces;
 using Ticketing.Application.DTOs.Staff;
 using Ticketing.Domain.Entities;
+using Ticketing.Domain.Enums;
 
 namespace Ticketing.Infrastructure.Persistance.Repositories;
 
@@ -31,6 +32,23 @@ public class StaffRepository : IStaffRepository
                 where u.NormalizedEmail == normalized && r.Name == Roles.Staff
                 select new StaffUserInfo(u.Id, u.Email!, u.FullName))
             .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Event>> GetAssignedEventsAsync(
+    Guid staffId, DateTime utcNow, CancellationToken cancellationToken = default)
+    {
+        // Le contrôle reste possible jusqu'à 3 heures après la fin de l'événement
+        var cutoff = utcNow - Event.CheckInClosesAfter;
+
+        return await (from s in _db.StaffAssignments
+                      join e in _db.Events on s.EventId equals e.Id
+                      where s.StaffId == staffId
+                            && (e.Status == EventStatus.Published || e.Status == EventStatus.Postponed)
+                            && e.EndDate >= cutoff
+                      orderby e.StartDate
+                      select e)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
     }
 
     public Task<bool> IsAssignedAsync(

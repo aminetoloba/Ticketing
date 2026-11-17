@@ -15,6 +15,8 @@ public interface IStaffRepository
 
     Task<bool> IsAssignedAsync(Guid staffId, Guid eventId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<StaffMemberDto>> GetByEventAsync(Guid eventId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Event>> GetAssignedEventsAsync(
+        Guid staffId, DateTime utcNow, CancellationToken cancellationToken = default);
     Task<StaffAssignment?> GetAssignmentAsync(Guid eventId, Guid staffId, CancellationToken cancellationToken = default);
 
     Task AddAsync(StaffAssignment assignment, CancellationToken cancellationToken = default);

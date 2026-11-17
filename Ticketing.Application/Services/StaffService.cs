@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Ticketing.Application.Common;
 using Ticketing.Application.Common.Interfaces;
+using Ticketing.Application.DTOs.Events;
 using Ticketing.Application.DTOs.Staff;
 using Ticketing.Domain.Entities;
 using Ticketing.Domain.Enums;
@@ -16,11 +17,13 @@ public class StaffService : IStaffService
 {
     private readonly IEventRepository _events;
     private readonly IStaffRepository _staff;
+    private readonly ICurrentUserService _currentUser;
 
-    public StaffService(IEventRepository events, IStaffRepository staff)
+    public StaffService(IEventRepository events, IStaffRepository staff, ICurrentUserService currentUser)
     {
         _events = events;
         _staff = staff;
+        _currentUser = currentUser;
     }
 
     public async Task<StaffMemberDto> AssignAsync(
@@ -57,6 +60,14 @@ public class StaffService : IStaffService
         return await _staff.GetByEventAsync(eventId, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<EventDto>> GetMyEventsAsync(CancellationToken cancellationToken = default)
+    {
+        var userId = _currentUser.UserId
+            ?? throw new AuthException("Utilisateur non authentifié.");
+
+        var events = await _staff.GetAssignedEventsAsync(userId, DateTime.UtcNow, cancellationToken);
+        return events.Select(EventService.ToDto).ToList();
+    }
     public async Task RemoveAsync(
         Guid eventId, Guid staffId, CancellationToken cancellationToken = default)
     {
